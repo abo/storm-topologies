@@ -10,6 +10,11 @@ using [jieba](https://github.com/fxsjy/jieba) for segment.
 mvn compile exec:java -Dexec.classpathScope=compile -Dexec.mainClass=com.trs.smas.storm.topology.WordCount
 ```
 
+### Run `RollingTopWords` in local mode, use this command:
+```
+mvn compile exec:java -Dexec.classpathScope=compile -Dexec.mainClass=com.trs.smas.storm.topology.RollingTopWords
+```
+
 
 ### Package a jar suitable for submitting to a cluster with this command:
 ```
