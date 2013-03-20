@@ -1,0 +1,3 @@
+[submodule "src/main/multilang/resources/deps/jieba"]
+	path = src/main/multilang/resources/deps/jieba
+	url = git://github.com/fxsjy/jieba.git
