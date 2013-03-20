@@ -16,7 +16,15 @@ public class RandomSentenceSpout extends BaseRichSpout {
 	
 	SpoutOutputCollector _collector;
     Random _rand;    
+    long tupleInterval = 100;
     
+    public RandomSentenceSpout(long tupleInterval){
+    	 if (tupleInterval < 0) {
+             throw new IllegalArgumentException("tupleInterval must be greater than or equals zero (you requested "
+                 + tupleInterval + ")");
+         }
+    	this.tupleInterval = tupleInterval;
+    }
 
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
@@ -26,7 +34,7 @@ public class RandomSentenceSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        Utils.sleep(100);
+        Utils.sleep(tupleInterval);
         String[] sentences = new String[] {
             "史上最恐怖课表！】网友@米琦要努力向上 说：星期一殡葬概论、收尸、整容；星期二烧骨、挽联、传染病…课这么满，怎么活。网友惊呼“好恐怖！”这份课表是长沙民政学院现代殡葬管理专业，学生说：其实课程并不“灵异恐怖”，就业前景也不错，只不过…对…象…比…较…难…找！",
             "【400多只大天鹅来京】#聚焦北京#“第一批候鸟已经抵达野鸭湖‘报到’了”，不久前，黑豹野生动物保护站在巡护监测候鸟迁徙情况时，发现了400多只天鹅的踪影。此次天鹅从南方迁徙北上的时间比往年提前了半个月，可能与北方冰化时间较早有关。估计10天后，野鸭湖湿地将迎来天鹅到京的高峰。",
@@ -47,7 +55,7 @@ public class RandomSentenceSpout extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("word"));
+        declarer.declare(new Fields("sentence"));
     }
     
 }

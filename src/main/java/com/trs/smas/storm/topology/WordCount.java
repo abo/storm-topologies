@@ -1,43 +1,26 @@
 package com.trs.smas.storm.topology;
 
-import backtype.storm.task.ShellBolt;
-import backtype.storm.topology.BasicOutputCollector;
-import backtype.storm.topology.IRichBolt;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseBasicBolt;
-import com.trs.smas.storm.spout.RandomSentenceSpout;
-import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.StormSubmitter;
+import java.util.HashMap;
+import java.util.Map;
+
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import java.util.HashMap;
-import java.util.Map;
+
+import com.trs.smas.storm.bolt.SegmentBolt;
+import com.trs.smas.storm.spout.RandomSentenceSpout;
 
 /**
  * This topology demonstrates Storm's stream groupings and multilang capabilities.
  */
 public class WordCount {
-    public static class SplitSentence extends ShellBolt implements IRichBolt {
-        
-		private static final long serialVersionUID = -900827116029229845L;
-
-		public SplitSentence() {
-            super("python", "segment.py");
-        }
-
-        @Override
-        public void declareOutputFields(OutputFieldsDeclarer declarer) {
-            declarer.declare(new Fields("word"));
-        }
-
-        @Override
-        public Map<String, Object> getComponentConfiguration() {
-            return null;
-        }
-    }  
     
     public static class CountWord extends BaseBasicBolt {
 
@@ -64,12 +47,12 @@ public class WordCount {
 	public static void main(String[] args) throws Exception{
         TopologyBuilder builder = new TopologyBuilder();
         
-        builder.setSpout("spout", new RandomSentenceSpout(), 5);
+        builder.setSpout("spout", new RandomSentenceSpout(0), 5);
         
-        builder.setBolt("split", new SplitSentence(), 8)
+        builder.setBolt("segment", new SegmentBolt(), 8)
                  .shuffleGrouping("spout");
         builder.setBolt("count", new CountWord(), 12)
-                 .fieldsGrouping("split", new Fields("word"));
+                 .fieldsGrouping("segment", new Fields("word"));
 
         Config conf = new Config();
         conf.setDebug(true);
