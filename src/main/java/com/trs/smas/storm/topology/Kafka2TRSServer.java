@@ -33,7 +33,8 @@ public class Kafka2TRSServer {
 						props.getProperty("trsserver.port"), 
 						props.getProperty("trsserver.username"), 
 						props.getProperty("trsserver.password"), 
-						props.getProperty("trsserver.database")), 4)
+						props.getProperty("trsserver.database"),
+						props.getProperty("trsserver.fields")), 4)
 				.shuffleGrouping("parse");
 
 		Config conf = new Config();

@@ -8,7 +8,11 @@ public class CSVUtil {
 	
 	private static final CSVParser parser = new CSVParser();
 	
-	public static String [] parse(String line) throws IOException{
-		return parser.parseLine(line);
+	public static String [] parse(String line){
+		try {
+			return parser.parseLine(line);
+		} catch (IOException e) {
+			return new String [0];
+		}
 	}
 }
