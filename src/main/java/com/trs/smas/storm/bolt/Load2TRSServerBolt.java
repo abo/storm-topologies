@@ -41,6 +41,7 @@ public class Load2TRSServerBolt extends BaseBasicBolt {
 			}
 			if(!connection.isValid()){
 				connection.connect(host, port, username, password);
+				connection.setMaintOptions('\n', "", "", 0, 0);
 			}
 			StringBuilder sb = new StringBuilder();
 			for(int i = 0 ; i < fieldNames.length ; i ++ ){
