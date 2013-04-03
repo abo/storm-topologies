@@ -34,7 +34,7 @@ public class Kafka2TRSServer {
 						props.getProperty("trsserver.username"), 
 						props.getProperty("trsserver.password"), 
 						props.getProperty("trsserver.database"),
-						props.getProperty("trsserver.fields")), 4)
+						props.getProperty("trsserver.fields")), 1)
 				.shuffleGrouping("parse");
 
 		Config conf = new Config();
@@ -51,7 +51,7 @@ public class Kafka2TRSServer {
 			cluster.submitTopology("kafa-to-trsserver", conf,
 					builder.createTopology());
 
-			Thread.sleep(1000 * 100);
+			Thread.sleep(1000 * 300);
 
 			cluster.shutdown();
 		}
