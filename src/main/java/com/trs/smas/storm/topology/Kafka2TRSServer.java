@@ -17,7 +17,7 @@ public class Kafka2TRSServer {
 	private static final String PROPS_FILE = "kafka2trsserver.properties";
 
 	public static void main(String[] args) throws Exception {
-		Properties props = PropertiesUtil.loadProperties(PROPS_FILE);
+		Properties props = PropertiesUtil.loadPropertiesFromClasspath(PROPS_FILE);
 
 		TopologyBuilder builder = new TopologyBuilder();
 

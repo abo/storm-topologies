@@ -14,6 +14,24 @@ public class PropertiesUtil {
 		return loadProperties(new File(fileName));
 	}
 	
+	public static Properties loadPropertiesFromClasspath(String fileName){
+		Preconditions.checkNotNull(fileName);
+		InputStream is = PropertiesUtil.class.getClassLoader().getResourceAsStream(fileName);
+		Preconditions.checkNotNull(is);
+		Properties props = new Properties();
+		
+		try{
+			props.load(is);
+		}catch(Exception e){
+		}finally{
+			try {
+				if(is != null) is.close();
+			} catch (IOException e) {
+			}
+		}
+		return props;
+	}
+	
 	public static Properties loadProperties(File f){
 		Preconditions.checkNotNull(f);
 		Preconditions.checkArgument(f.isFile() && f.canRead());
