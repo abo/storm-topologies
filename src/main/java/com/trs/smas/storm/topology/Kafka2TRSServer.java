@@ -9,7 +9,7 @@ import backtype.storm.topology.TopologyBuilder;
 
 import com.trs.smas.storm.bolt.Load2TRSServerBolt;
 import com.trs.smas.storm.bolt.ParseCSVBolt;
-import com.trs.smas.storm.bolt.TempTRSFileBolt;
+import com.trs.smas.storm.bolt.TRSDumpBolt;
 import com.trs.smas.storm.spout.KafkaSpout;
 import com.trs.smas.storm.util.PropertiesUtil;
 
@@ -28,15 +28,14 @@ public class Kafka2TRSServer {
 				.shuffleGrouping("spout");
 		// builder.setBolt("distinguish", new
 		// DistinguishBolt(),3).shuffleGrouping("parse");
-		builder.setBolt("tmpfile", new TempTRSFileBolt(props.getProperty("trsserver.fields"),props.getProperty("trsserver.database") ),1).globalGrouping("parse");
+		builder.setBolt("dump", new TRSDumpBolt(props.getProperty("trsserver.fields")),1).globalGrouping("parse");
 		builder.setBolt(
 				"trsserver",
 				new Load2TRSServerBolt(props.getProperty("trsserver.host"),
 						props.getProperty("trsserver.port"), 
 						props.getProperty("trsserver.username"), 
-						props.getProperty("trsserver.password"), 
-						props.getProperty("trsserver.database")), 1)
-				.shuffleGrouping("tmpfile");
+						props.getProperty("trsserver.password")), 1)
+				.shuffleGrouping("dump");
 
 		Config conf = new Config();
 
