@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,14 +22,16 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 import com.trs.smas.storm.util.CSVUtil;
+import com.trs.smas.storm.util.DateUtil;
+import com.trs.smas.storm.util.StringUtil;
 
 public class TRSDumpBolt extends BaseBasicBolt {
 	private static final Logger LOG = Logger.getLogger(TRSDumpBolt.class);
 
 	private static final long serialVersionUID = -4481643466309672632L;
 	
-	private static final long EMIT_TIMEOUT = 60*1000L;
-	private static final long EMIT_COUNT_LIMIT = 10000L;
+	private static final long EMIT_TIMEOUT = 5 * 60*1000L;
+	private static final long EMIT_COUNT_LIMIT = 15000L;
 	
 	private String [] fieldNames;
 	
@@ -39,13 +39,14 @@ public class TRSDumpBolt extends BaseBasicBolt {
 	
 	DatabaseSelector dbSelector = new DatabaseSelector(){
 		private static final long serialVersionUID = -7541792663026508734L;
-
+		private static final String prefix = "sina_status_zt_";
 		@Override
 		public String select(Tuple input) {
 			String [] fieldValues = (String[])input.getValue(1);
-			try{Long id = Long.parseLong(fieldValues[0]);
-				return (id % 2 == 0)?"kafka_load_test_2":"kafka_load_test_1";
-			}catch(Exception e){return "kafka_load_test_2";}
+			String time = fieldValues[6];
+			String date = time.substring(0, DateUtil.DEFAULT_INPUT_FORMAT.length());
+			String suffix = DateUtil.nextMonthFirstDay(date);
+			return prefix+suffix;
 		}
 	};
 
@@ -78,7 +79,7 @@ public class TRSDumpBolt extends BaseBasicBolt {
 			try{
 				dump.writer.append("<REC>").append("\n");
 				for(int i = 0 ; i < fieldNames.length ; i++){
-					dump.writer.append("<").append(fieldNames[i]).append(">").append("=").append(fieldValues[i]).append("\n");
+					dump.writer.append("<").append(fieldNames[i]).append(">").append("=").append(StringUtil.avoidNull(fieldValues[i])).append("\n");
 				}
 				dump.recordCount++;
 			}catch (IOException e) {
