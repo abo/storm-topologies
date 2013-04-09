@@ -1,19 +1,21 @@
 package com.trs.smas.storm.bolt;
 
+import java.io.File;
+
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Tuple;
 
+import com.trs.client.RecordReport;
 import com.trs.client.TRSConnection;
+import com.trs.client.TRSConstant;
 import com.trs.client.TRSException;
 import com.trs.smas.storm.util.CSVUtil;
 
 public class Load2TRSServerBolt extends BaseBasicBolt {
 
 	private static final long serialVersionUID = -7489261520275127899L;
-	
-	private String [] fieldNames;
 	
 	private String host;
 	private String port;
@@ -22,32 +24,40 @@ public class Load2TRSServerBolt extends BaseBasicBolt {
 	private String database;
 	TRSConnection connection;
 	
-	public Load2TRSServerBolt(String host,String port,String username,String password,String database,String fieldNames) throws TRSException{
+	public Load2TRSServerBolt(String host,String port,String username,String password,String database) throws TRSException{
 		this.host = host;
 		this.port = port;
 		this.username = username;
 		this.password = password;
 		this.database = database;
-		this.fieldNames = CSVUtil.parse(fieldNames);
 	}
 	
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
-		String [] fieldValues = (String []) input.getValue(1);
-		
-		StringBuilder sb = new StringBuilder();
-		for(int i = 0 ; i < fieldNames.length ; i ++ ){
-			sb.append(fieldNames[i]).append("=").append(fieldValues[i]).append("\n");
-		}
-		sb.deleteCharAt(sb.length()-1);
-
+		String database = input.getString(0);
+		String fileName = input.getString(1);
+		System.out.println("==================================================\n"
+				+"load " + fileName + " to "+database
+				+"\n==================================================");
+//		String [] fieldValues = (String []) input.getValue(1);
+//		
+//		StringBuilder sb = new StringBuilder();
+//		for(int i = 0 ; i < fieldNames.length ; i ++ ){
+//			sb.append(fieldNames[i]).append("=").append(fieldValues[i]).append("\n");
+//		}
+//		sb.deleteCharAt(sb.length()-1);
+//
 		try {		
 			if(connection == null){
 				connection = new TRSConnection();
 				connection.connect(host, port, username, password);
-				connection.setMaintOptions('\n', "", "", 0, 0);
+				TRSConnection.setCharset(TRSConstant.TCE_CHARSET_UTF8, false);
 			}
-			connection.executeInsert(database, username, sb.toString());
+			RecordReport r = connection.loadRecords(database, username, fileName, null, true);
+			System.out.println(r.lFailureNum);
+			if(r.lFailureNum == 0){
+				new File(fileName).delete();
+			}
 		} catch (TRSException e) {
 			collector.reportError(e);
 		}
@@ -59,10 +69,10 @@ public class Load2TRSServerBolt extends BaseBasicBolt {
 
 	@Override
 	public void cleanup() {
-		if(connection != null){
-			connection.close();
-			connection = null;
-		}
+//		if(connection != null){
+//			connection.close();
+//			connection = null;
+//		}
 		super.cleanup();
 	}
 
