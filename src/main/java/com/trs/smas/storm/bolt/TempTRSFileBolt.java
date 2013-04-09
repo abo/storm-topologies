@@ -24,13 +24,15 @@ public class TempTRSFileBolt extends BaseBasicBolt {
 	private static final long serialVersionUID = -4481643466309672632L;
 	
 	private String [] fieldNames;
+	private String database;
 	Writer out;
 	String tmpFileName;
 	int recordCount;
 	long timestamp;
 
-	public TempTRSFileBolt(String fieldNames){
+	public TempTRSFileBolt(String fieldNames,String database){
 		this.fieldNames = CSVUtil.parse(fieldNames);
+		this.database = database;
 	}
 	
 	@Override
@@ -75,7 +77,7 @@ public class TempTRSFileBolt extends BaseBasicBolt {
 		out.flush();
 		out.close();
 		out=null;
-		collector.emit(new Values("databasename",tmpFileName));
+		collector.emit(new Values(database,tmpFileName));
 		recordCount = 0;
 		tmpFileName = null;
 	}

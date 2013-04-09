@@ -28,7 +28,7 @@ public class Kafka2TRSServer {
 				.shuffleGrouping("spout");
 		// builder.setBolt("distinguish", new
 		// DistinguishBolt(),3).shuffleGrouping("parse");
-		builder.setBolt("tmpfile", new TempTRSFileBolt(props.getProperty("trsserver.fields")),1).globalGrouping("parse");
+		builder.setBolt("tmpfile", new TempTRSFileBolt(props.getProperty("trsserver.fields"),props.getProperty("trsserver.database") ),1).globalGrouping("parse");
 		builder.setBolt(
 				"trsserver",
 				new Load2TRSServerBolt(props.getProperty("trsserver.host"),
