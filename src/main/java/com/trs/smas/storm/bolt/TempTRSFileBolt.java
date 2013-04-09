@@ -48,8 +48,9 @@ public class TempTRSFileBolt extends BaseBasicBolt {
 			}
 			String [] fieldValues = (String []) input.getValue(1);
 			try {
+				out.append("<REC>").append("\n");
 				for(int i = 0 ; i < fieldNames.length ; i ++ ){
-					out.append(fieldNames[i]).append("=").append(fieldValues[i]).append("\n");
+					out.append("<").append(fieldNames[i]).append(">").append("=").append(fieldValues[i]).append("\n");
 				}
 				recordCount++;
 			} catch (IOException e) {
@@ -84,7 +85,7 @@ public class TempTRSFileBolt extends BaseBasicBolt {
 	
 	private void createTempFile() throws IOException{
 		File f = File.createTempFile("com.trs.smas.storm.", ".trs");
-		tmpFileName = f.getAbsolutePath();
+		tmpFileName = f.getAbsolutePath().replace("\\", "\\\\");
 		
 		out = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(f), "UTF8"));

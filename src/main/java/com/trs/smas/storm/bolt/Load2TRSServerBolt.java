@@ -53,7 +53,7 @@ public class Load2TRSServerBolt extends BaseBasicBolt {
 				connection.connect(host, port, username, password);
 				TRSConnection.setCharset(TRSConstant.TCE_CHARSET_UTF8, false);
 			}
-			RecordReport r = connection.loadRecords(database, username, fileName, null, true);
+			RecordReport r = connection.loadRecords(database, username, fileName, null, false);
 			System.out.println(r.lFailureNum);
 			if(r.lFailureNum == 0){
 				new File(fileName).delete();
