@@ -37,7 +37,7 @@ public class Load2TRSServerBolt extends BaseBasicBolt {
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		String database = input.getString(0);
 		String fileName = input.getString(1);
-		LOG.info("loading " + fileName + " to "+database);
+		LOG.info("loading " + fileName + " to "+username+"@"+host+":"+port+"/"+database);
 
 		try {		
 			if(connection == null){

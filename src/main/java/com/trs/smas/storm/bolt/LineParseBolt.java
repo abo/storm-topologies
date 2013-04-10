@@ -9,7 +9,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-import com.trs.smas.storm.util.CSVUtil;
 import com.trs.smas.storm.util.DateUtil;
 import com.trs.smas.storm.util.StringUtil;
 
@@ -18,22 +17,25 @@ import com.trs.smas.storm.util.StringUtil;
  * @author huangshengbo
  *
  */
-public class ParseCSVBolt extends BaseBasicBolt {
+public class LineParseBolt extends BaseBasicBolt {
 	
-	private static final Logger LOG = Logger.getLogger(ParseCSVBolt.class);
+	private static final Logger LOG = Logger.getLogger(LineParseBolt.class);
 
 	private static final long serialVersionUID = 1703468659718068776L;
 	
-	public ParseCSVBolt(){
+	public LineParseBolt(){
 	}
 
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		//"bid","IR_UID","IR_SCREEN_NAME","v_class","IR_STATUS_CONTENT","IR_THUMBNAIL_PIC","IR_CREATED_AT","IR_VIA","IR_RTTCOUNT","IR_COMMTCOUNT","IR_RETWEETED_UID","IR_RETWEETED_SCREEN_NAME","rt_v_class","rt_content","rt_img","src_rt_num","src_cm_num","gender","rt_bid","location","IR_RETWEETED_MID","IR_MID","lat","lon","lbs_type","lbs_title","poiid","links","hashtags","ats","rt_links","rt_hashtags","rt_ats","v_url","rt_v_url","u_type"
-		String [] fields = CSVUtil.parse(input.getString(1));
+		String line = input.getString(1);
+		if(line == null || line.trim().length() == 0){
+			return;
+		}
+		String [] fields = StringUtil.parse(input.getString(1));
 		String [] finalFields = new String[50];
 		for(int i = 0 ; i < fields.length ; i ++){
-			System.out.println(i+" "+fields[i]);
 			finalFields[i] = fields[i];
 		}
 		finalFields[35] = ""; //u_type
@@ -45,11 +47,11 @@ public class ParseCSVBolt extends BaseBasicBolt {
 			finalFields[40] = finalFields[6].substring(0, "yyyy".length());//"IR_CREATED_YEAR",
 			finalFields[41] = finalFields[6].substring(0, "yyyy-MM".length()).replace('-', '.');//"IR_CREATED_MONTH",
 			finalFields[42] = finalFields[6].substring("yyyy-MM-dd ".length(), "yyyy-MM-dd hh".length());//"IR_CREATED_HOUR",
-			finalFields[43] = "$date";//"IR_LOADTIME"
+			finalFields[43] = "$time";//"IR_LOADTIME"
 			//,"IR_SID","IR_HKEY","IR_GROUPNAME","IR_SITENAME","IR_STATUS_BODY","IR_CHANNEL"
 			collector.emit(new Values(input.getString(0),finalFields));
 		}catch(Exception e){
-			LOG.error("parse failed ["+StringUtil.join(fields)+"]",e);
+			LOG.error("parse["+input.getString(1)+"] failed,array: \n"+StringUtil.join(fields),e);
 			collector.reportError(e);
 		}
 	}

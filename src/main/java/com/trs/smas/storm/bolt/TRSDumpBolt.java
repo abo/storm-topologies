@@ -21,7 +21,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-import com.trs.smas.storm.util.CSVUtil;
 import com.trs.smas.storm.util.DateUtil;
 import com.trs.smas.storm.util.StringUtil;
 
@@ -30,35 +29,37 @@ public class TRSDumpBolt extends BaseBasicBolt {
 
 	private static final long serialVersionUID = -4481643466309672632L;
 	
-	private static final long EMIT_TIMEOUT = 5 * 60*1000L;
-	private static final long EMIT_COUNT_LIMIT = 15000L;
-	
 	private String [] fieldNames;
+	private DatabaseSelector dbSelector;
+	private long emitSize;
+	private long timeout;
 	
 	Map<String,TRSServerDump> dumps = new ConcurrentHashMap<String,TRSServerDump>();
 	
-	DatabaseSelector dbSelector = new DatabaseSelector(){
-		private static final long serialVersionUID = -7541792663026508734L;
-		private static final String prefix = "sina_status_zt_";
-		@Override
-		public String select(Tuple input) {
-			String [] fieldValues = (String[])input.getValue(1);
-			String time = fieldValues[6];
-			String date = time.substring(0, DateUtil.DEFAULT_INPUT_FORMAT.length());
-			String suffix = DateUtil.nextMonthFirstDay(date);
-			return prefix+suffix;
-		}
-	};
 
-	public TRSDumpBolt(String fieldNames){
-		this.fieldNames = CSVUtil.parse(fieldNames);
+	public TRSDumpBolt(String fieldNames,final String databasePrefix,String timeout,String emitSize){
+		this.fieldNames = StringUtil.parse(fieldNames);
+		this.emitSize = Long.parseLong(emitSize);
+		this.timeout = Long.parseLong(timeout);
+		
+		this.dbSelector = new DatabaseSelector(){
+			private static final long serialVersionUID = -7541792663026508734L;
+			@Override
+			public String select(Tuple input) {
+				String [] fieldValues = (String[])input.getValue(1);
+				String time = fieldValues[6];
+				String date = time.substring(0, DateUtil.DEFAULT_INPUT_FORMAT.length());
+				String suffix = DateUtil.nextMonthFirstDay(date);
+				return databasePrefix+suffix;
+			}
+		};
 	}
 	
 	@Override
 	public void execute(Tuple input, BasicOutputCollector collector) {
 		if(isTickTuple(input)){
 			for(String db : dumps.keySet()){
-				if(System.currentTimeMillis() - dumps.get(db).timestamp >= EMIT_TIMEOUT){
+				if(System.currentTimeMillis() - dumps.get(db).timestamp >= timeout){
 					emit(collector,db);
 				}
 			}
@@ -87,7 +88,7 @@ public class TRSDumpBolt extends BaseBasicBolt {
 				collector.reportError(e);
 			}
 			
-			if(dump.recordCount >= EMIT_COUNT_LIMIT){
+			if(dump.recordCount >= emitSize){
 				emit(collector,db);
 			}
 		}
